@@ -27,6 +27,8 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 import com.opentext.livelink.service.memberservice.*;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HttpConduitFeature;
 import org.apache.cxf.transport.http.HttpConduitConfig;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
@@ -155,8 +157,9 @@ public class CswsSession
       this.authClientHandle = null;
     }
     if (documentManagementService != null) {
-      this.documentManagementHandle = documentManagementService.getBasicHttpBindingDocumentManagement();
-      ((BindingProvider)documentManagementHandle).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, documentManagementServiceURL);
+        this.documentManagementHandle = documentManagementService.getBasicHttpBindingDocumentManagement();
+        installInvalidCharInterceptor(this.documentManagementHandle);
+        ((BindingProvider)documentManagementHandle).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, documentManagementServiceURL);
     } else {
       this.documentManagementHandle = null;
     }
@@ -174,11 +177,17 @@ public class CswsSession
     }
     if (searchServiceService != null) {
       this.searchServiceHandle = searchServiceService.getBasicHttpBindingSearchService();
+      installInvalidCharInterceptor(this.searchServiceHandle);
       ((BindingProvider)searchServiceHandle).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, searchServiceServiceURL);
     } else {
       this.searchServiceHandle = null;
     }
 
+  }
+
+  private static void installInvalidCharInterceptor(Object handle) {
+      Client client = ClientProxy.getClient(handle);
+      client.getInInterceptors().add(new InvalidCharInterceptor(" "));
   }
 
   /**

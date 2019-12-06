@@ -22,7 +22,7 @@
     <target name="setup-maven-url">
 	<property name="maven-base-url" value="https://repo1.maven.org/maven2"/>
     </target>
-    
+
     <target name="download-via-maven" depends="setup-maven-url">
 	<get src="${maven-base-url}/${project-path}/${artifact-name}/${artifact-version}/${artifact-name}-${artifact-version}.${artifact-type}" dest="${target}/${artifact-name}-${artifact-version}.${artifact-type}"/>
     </target>
@@ -58,14 +58,14 @@
 	    <os family="unix"/>
 	</condition>
     </target>
-    
+
     <target name="check-svn-patch-available" depends="calculate-svn-patch-available" unless="svn-version-ok">
 	<echo message="You need svn version 1.7 or higher - attempting patch instead."/>
     </target>
-    
+
     <target name="check-patch-available" depends="calculate-patch-available" unless="patch-ok">
     </target>
-    
+
     <target name="patch-source-via-svn" depends="check-svn-patch-available" if="svn-version-ok">
 	<mkdir dir="${root-dir}"/>
 	<exec dir="${root-dir}" executable="svn" failifexecutionfails="true" failonerror="true">
@@ -74,16 +74,16 @@
 	      <arg value="${dir-name}" />
 	</exec>
     </target>
-    
+
     <target name="patch-source-via-patch" depends="check-patch-available" if="patch-ok">
 	<mkdir dir="${root-dir}"/>
 	<exec dir="${root-dir}/${dir-name}" executable="patch" input="../${diff-file}" failifexecutionfails="true" failonerror="true">
 	      <arg value="-p0" />
 	</exec>
     </target>
-    
+
     <target name="patch-source" depends="patch-source-via-svn,patch-source-via-patch"/>
-    
+
     <target name="build-via-ant">
 	<exec osfamily="windows" dir="${root-dir}" executable="cmd" failifexecutionfails="true" failonerror="true">
 	    <arg value="/c"/>
@@ -94,7 +94,7 @@
 	    <arg value="${target}" />
 	</exec>
     </target>
-    
+
     <target name="clean">
 	<delete dir="build"/>
 	<delete dir="dist"/>
@@ -216,6 +216,7 @@
 	    <include name="java-libpst*.jar"/>
 	    <include name="xz*.jar"/>
 	    <include name="cxf-core*.jar"/>
+        <include name="cxf-rt-frontend-simple*.jar"/>
 	    <include name="cxf-rt-frontend-jaxrs*.jar"/>
 	    <include name="cxf-rt-transports-http*.jar"/>
 	    <include name="cxf-rt-rs-client*.jar"/>
@@ -241,7 +242,7 @@
 	<pathelement location="build/interface/classes"/>
 	<pathelement location="build/rmistub/classes"/>
     </path>
-    
+
     <path id="connector-classpath">
 	<path refid="mcf-connector-build.connector-classpath"/>
     </path>
@@ -300,7 +301,7 @@
     connector-lib-proprietary for use at runtime, and the {connector}-README.txt
     file will only be delivered to the connector-lib directory.
     -->
-    
+
     <target name="calculate-condition">
 	<available file="build.xml" property="build-present"/>
     </target>
@@ -325,7 +326,7 @@
 	    <isset property="build-present"/>
 	</condition>
     </target>
-    
+
     <target name="pretest-check" depends="precompile-warn,pretest-warn">
 	<condition property="canTest">
 	    <and>
@@ -350,7 +351,7 @@
 
     <target name="has-proprietary-materials-check">
     </target>
-    
+
     <target name="build-stubs-check" depends="has-stubs-check,has-proprietary-materials-check" if="hasStubs">
 	<condition property="buildStubs">
 	    <not>
@@ -362,7 +363,7 @@
     <target name="include-README-lib-proprietary-check" depends="precompile-check" if="canBuild">
 	<available file="proprietary-library-instructions.txt" property="includeREADMELibProprietary"/>
     </target>
-    
+
     <target name="include-proprietary-instructions-lib-proprietary-check" depends="prerun-check" unless="canRun">
 	<available file="proprietary-library-instructions.txt" property="includeProprietaryInstructionsLibProprietary"/>
     </target>
@@ -542,7 +543,7 @@
     </target>
 
     <target name="classcreate-xsds"/>
-    
+
     <target name="has-xsds-check" depends="classcreate-xsds,precompile-check" if="canBuild">
 	<available file="build/xsdjava" property="hasXSDs"/>
     </target>
@@ -612,7 +613,7 @@
 	<mkdir dir="build/connector/classes"/>
 	<native2ascii encoding="UTF-8" src="connector/src/main/native2ascii" dest="build/connector/classes" includes="**/*.properties" />
     </target>
-    
+
     <target name="compile-rmic" depends="rmic-build-all,has-RMI-check" if="hasRMI">
 	<mkdir dir="build/rmiskel/classes"/>
 	<copy todir="build/rmiskel/classes">
@@ -627,7 +628,7 @@
 	    </fileset>
 	</copy>
     </target>
-    
+
     <target name="compile-server" depends="compile-interface,compile-implementation,compile-rmic,has-RMI-check" if="hasRMI">
 	<mkdir dir="build/server/classes"/>
 	<javac srcdir="server/src/main/java" destdir="build/server/classes" deprecation="true" target="1.8" source="1.8" debug="true" debuglevel="lines,vars,source" encoding="UTF-8">
@@ -740,7 +741,7 @@
 	<copy todir="dist/lib" file="build/jar/mcf-${ant.project.name}-connector-rmistub.jar"/>
 	<copy todir="dist/lib" file="build/jar/mcf-${ant.project.name}-connector-interface.jar"/>
     </target>
-    
+
     <target name="lib-wsdls" depends="has-wsdls-check" if="hasWSDLs">
 	<!-- mkdir dir="dist/lib"/>
 	<copy todir="dist/lib">
@@ -774,12 +775,12 @@
 	<mkdir dir="dist/lib-proprietary-only"/>
 	<copy tofile="dist/lib-proprietary-only/${ant.project.name}-README.txt" file="proprietary-library-instructions.txt"/>
     </target>
-    
+
     <target name="lib-proprietary-instructions" depends="include-proprietary-instructions-lib-proprietary-check" if="includeProprietaryInstructionsLibProprietary">
 	<mkdir dir="dist/lib-proprietary-only"/>
 	<copy tofile="dist/lib-proprietary-only/${ant.project.name}-PLACEHOLDER.txt" file="proprietary-library-instructions.txt"/>
     </target>
-    
+
     <target name="server-process" depends="jar-interface,jar-implementation,jar-rmiskel,jar-server,has-RMI-check" if="hasRMI">
 	<mkdir dir="dist/server-process/lib"/>
 	<copy todir="dist/server-process/lib">
@@ -820,7 +821,7 @@
     <!-- Delivery targets.  These targets conditionally deliver code and connectors.xml lines
 	into the main distribution area.
     -->
-    
+
     <target name="general-connector-integration-check" depends="integration" if="canBuild">
 	<available file="dist/integration" type="dir" property="has-integration"/>
     </target>
@@ -853,7 +854,7 @@
 	    <fileset dir="dist/registry-process"/>
 	</copy>
     </target>
-    
+
     <target name="general-connector-delivery-processes" depends="general-delivery-server-process,general-delivery-registry-process"/>
 
     <target name="general-connector-proprietary-only-check" depends="lib-proprietary-instructions,lib-proprietary-README">
@@ -870,7 +871,7 @@
     <target name="general-connector-delivery-check" depends="lib">
 	<available file="dist/lib" type="dir" property="has-lib"/>
     </target>
-    
+
     <target name="general-connector-delivery" depends="general-connector-delivery-check,general-connector-proprietary-only-delivery,general-connector-delivery-integration,general-connector-delivery-processes" if="has-lib">
 	<mkdir dir="${mcf-dist}/connector-lib"/>
 	<copy todir="${mcf-dist}/connector-lib">
@@ -912,7 +913,7 @@
 	    </or>
 	</condition>
     </target>
-    
+
     <target name="general-add-mapping-connector-commented" depends="general-connector-runnable-check" unless="is-runnable">
 	<replace file="${mcf-dist}/connectors.xml" token="&lt;!-- Add your mapping connectors here --&gt;" value="&lt;!-- Add your mapping connectors here --&gt;&#0010;  &lt;!--mappingconnector name=&quot;${connector-label}&quot; class=&quot;${connector-class}&quot;/--&gt;"/>
     </target>
@@ -1026,19 +1027,19 @@
 
     <target name="general-add-repository-connector" depends="general-add-repository-connector-commented,general-add-repository-connector-non-commented,general-add-repository-connector-proprietary-commented,general-add-repository-connector-proprietary-non-commented">
     </target>
-    
+
     <!-- Main targets -->
 
     <target name="download-dependencies"/>
 
     <target name="download-cleanup"/>
-    
+
     <target name="deliver-connector" depends="general-connector-delivery"/>
-    
+
     <target name="deliver-connector-doc" depends="general-connector-doc-delivery"/>
 
     <target name="build" depends="lib,lib-proprietary-instructions,lib-proprietary-README,server-process,registry-process,integration"/>
-    
+
     <target name="build-tests" depends="build,compile-tests"/>
 
     <target name="run-IT-postgresql" depends="compile-tests,pretest-check" if="canTest">
@@ -1063,7 +1064,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-IT-HSQLDB" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-HSQLDB-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-HSQLDB-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1086,7 +1087,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-IT-HSQLDBext" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-HSQLDBext-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-HSQLDBext-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1109,7 +1110,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-IT-mysql" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-mysql-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-mysql-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1132,7 +1133,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-LT-postgresql" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-postgresql-output"/>
 	<junit fork="true" maxmemory="384m" dir="test-postgresql-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1155,7 +1156,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-LT-HSQLDB" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-HSQLDB-output"/>
 	<junit fork="true" maxmemory="1024m" dir="test-HSQLDB-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1178,7 +1179,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-LT-HSQLDBext" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-HSQLDBext-output"/>
 	<junit fork="true" maxmemory="384m" dir="test-HSQLDBext-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1201,7 +1202,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-LT-mysql" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-mysql-output"/>
 	<junit fork="true" maxmemory="384m" dir="test-mysql-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1224,7 +1225,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-UI-postgresql" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-postgresql-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-postgresql-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1278,7 +1279,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-UI-HSQLDBext" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-HSQLDBext-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-HSQLDBext-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
@@ -1305,7 +1306,7 @@
 	    </batchtest>
 	</junit>
     </target>
-    
+
     <target name="run-UI-mysql" depends="compile-tests,pretest-check" if="canTest">
 	<mkdir dir="test-mysql-output"/>
 	<junit fork="true" maxmemory="128m" dir="test-mysql-output" outputtoformatters="true" showoutput="true" haltonfailure="true">
