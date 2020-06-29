@@ -468,7 +468,7 @@ public class CswsSession
   }
 
   public void getVersionContents(final long nodeId, final long version, final OutputStream os)
-    throws ManifoldCFException, ServiceInterruption {
+    throws ManifoldCFException, ServiceInterruption, BadVersionContentException {
     String errorMessage = "Failed to get version contents of node " + nodeId + " in version " + version;
     try {
       final Holder<OTAuthentication> auth = getOTAuthentication();
@@ -476,6 +476,9 @@ public class CswsSession
       final DataHandler dataHandler = getContentServiceHandle().downloadContent(contextID, auth);
       dataHandler.writeTo(os);
     } catch (SOAPFaultException e) {
+      if (e.getFault().getFaultCode().equals("ns0:DocMan.Error") && e.getFault().getFaultString().contains("E682229766")) {
+        throw new BadVersionContentException(errorMessage, e);
+      }
       processSOAPFault(errorMessage, e);
     } catch (IOException e) {
       processIOException(errorMessage, e);

@@ -53,6 +53,7 @@ import com.opentext.livelink.service.memberservice.Member;
 import com.opentext.livelink.service.searchservices.SGraph;
 import com.opentext.livelink.service.searchservices.SNode;
 
+import org.apache.manifoldcf.csws.BadVersionContentException;
 import org.apache.manifoldcf.csws.CswsParameters;
 import org.apache.manifoldcf.csws.CswsSession;
 
@@ -2906,6 +2907,12 @@ public class CswsConnector extends org.apache.manifoldcf.crawler.connectors.Base
         handleIOException(contextMsg,e);
       }
     }
+    catch (BadVersionContentException e)
+    {
+      resultCode = e.getClass().getSimpleName().toUpperCase(Locale.ROOT);
+      resultDescription = e.getMessage();
+      activities.noDocument(documentIdentifier,version);
+    }
     catch (ManifoldCFException e)
     {
       if (e.getErrorCode() == ManifoldCFException.INTERRUPTED)
@@ -5327,7 +5334,7 @@ public class CswsConnector extends org.apache.manifoldcf.crawler.connectors.Base
     }
 
     public void finishUp()
-      throws InterruptedException, ManifoldCFException, ServiceInterruption
+      throws InterruptedException, ManifoldCFException, ServiceInterruption, BadVersionContentException
     {
       // This will be called during the finally
       // block in the case where all is well (and
@@ -5337,6 +5344,8 @@ public class CswsConnector extends org.apache.manifoldcf.crawler.connectors.Base
       join();
       Throwable thr = exception;
       if (thr != null) {
+        if (thr instanceof BadVersionContentException)
+          throw (BadVersionContentException) thr;
         if (thr instanceof ManifoldCFException)
           throw (ManifoldCFException) thr;
         else if (thr instanceof ServiceInterruption)
